@@ -2,24 +2,34 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Wipe in correct FK order
+        DB::statement('PRAGMA foreign_keys = OFF');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        DB::table('ledger_entries')->truncate();
+        DB::table('transaction_items')->truncate();
+        DB::table('transactions')->truncate();
+        DB::table('payments')->truncate();
+        DB::table('business_profile_customer')->truncate();
+        DB::table('customers')->truncate();
+        DB::table('materials')->truncate();
+        DB::table('units')->truncate();
+        DB::table('business_profiles')->truncate();
+        DB::table('users')->truncate();
+
+        DB::statement('PRAGMA foreign_keys = ON');
+
+        $this->call([
+            UserSeeder::class,
+            BusinessProfileSeeder::class,
+            CustomerSeeder::class,
+            MaterialUnitSeeder::class,
         ]);
     }
 }

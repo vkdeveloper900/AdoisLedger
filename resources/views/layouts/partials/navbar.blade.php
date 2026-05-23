@@ -9,9 +9,29 @@
 
     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
         <div class="navbar-nav align-items-center me-auto">
-            <div class="nav-item">
-                <span class="fw-semibold">@yield('page_heading', 'Dashboard')</span>
-            </div>
+            @if ($activeProfile)
+                <div class="nav-item d-flex align-items-center gap-2">
+                    <i class="icon-base ti tabler-building-store text-primary icon-md"></i>
+                    <span class="fw-bold text-primary">{{ $activeProfile->name }}</span>
+                    <span class="badge bg-label-primary rounded-pill" style="font-size:10px;">
+                        {{ $activeProfile->business_type_label }}
+                    </span>
+                    <form method="POST" action="{{ route('shop.exit') }}" class="d-inline ms-1">
+                        @csrf
+                        <button type="submit"
+                                class="btn btn-sm btn-icon btn-text-danger rounded-pill p-0"
+                                title="Exit Business"
+                                onclick="return confirm('Exit {{ addslashes($activeProfile->name) }}?')">
+                            <i class="icon-base ti tabler-door-exit icon-md"></i>
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="nav-item d-flex align-items-center gap-2">
+                    <i class="icon-base ti tabler-building-store text-body-secondary icon-md"></i>
+                    <span class="text-body-secondary">No business selected</span>
+                </div>
+            @endif
         </div>
 
         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
@@ -59,7 +79,7 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-0">AdoisLedger</h6>
+                                    <h6 class="mb-0">{{ auth()->user()->name }}</h6>
                                     <small class="text-body-secondary">Admin</small>
                                 </div>
                             </div>

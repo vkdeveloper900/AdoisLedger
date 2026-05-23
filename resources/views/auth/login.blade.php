@@ -18,7 +18,7 @@
                     </svg>
                 </span>
             </span>
-            <span class="app-brand-text demo text-heading fw-bold">AdoisLedger</span>
+{{--            <span class="app-brand-text demo text-heading fw-bold">AdoisLedger</span>--}}
         </a>
 
         <div class="authentication-inner row m-0">
