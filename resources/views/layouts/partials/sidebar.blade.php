@@ -50,6 +50,8 @@
             </a>
         </li>
 
+        @if ($activeProfile)
+
         <!-- Billing -->
         <li class="menu-header small">
             <span class="menu-header-text">Billing</span>
@@ -76,7 +78,7 @@
             </a>
         </li>
 
-        @if ($activeProfile && $activeProfile->business_type_id === 2)
+        @if ($activeProfile->business_type_id === 2)
         <li class="menu-header small">
             <span class="menu-header-text">Purchases</span>
         </li>
@@ -117,6 +119,8 @@
                 <div>Balance Sheet</div>
             </a>
         </li>
+
+        @endif
 
         <!-- System -->
         <li class="menu-header small">
