@@ -24,6 +24,13 @@ class DashboardController extends Controller
         return view('dashboard.index', array_merge($data, ['profiles' => BusinessProfile::all()]));
     }
 
+    private function monthExpr(): string
+    {
+        return DB::getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', date)"
+            : "DATE_FORMAT(date, '%Y-%m')";
+    }
+
     private function businessStats(BusinessProfile $profile): array
     {
         $id    = $profile->id;
@@ -81,11 +88,12 @@ class DashboardController extends Controller
         }
 
         // ── Monthly revenue last 6 months ──
+        $m = $this->monthExpr();
         $monthlyRevenue = Transaction::where('business_profile_id', $id)
             ->whereIn('type', $saleTypes)
             ->where('date', '>=', now()->subMonths(5)->startOfMonth())
-            ->selectRaw("strftime('%Y-%m', date) as month, SUM(total_amount) as total")
-            ->groupByRaw("strftime('%Y-%m', date)")
+            ->selectRaw("$m as month, SUM(total_amount) as total")
+            ->groupByRaw($m)
             ->orderBy('month')
             ->pluck('total', 'month');
 
@@ -172,14 +180,15 @@ class DashboardController extends Controller
         $customersCount = Customer::whereIn('party_type', ['customer', 'both'])->count();
         $vendorsCount   = Customer::whereIn('party_type', ['vendor', 'both'])->count();
 
+        $m = $this->monthExpr();
         $monthlyRevenue = Transaction::whereIn('type', [
                 TransactionType::DairySale->value,
                 TransactionType::GeneralSale->value,
                 TransactionType::Construction->value,
             ])
             ->where('date', '>=', now()->subMonths(5)->startOfMonth())
-            ->selectRaw("strftime('%Y-%m', date) as month, SUM(total_amount) as total")
-            ->groupByRaw("strftime('%Y-%m', date)")
+            ->selectRaw("$m as month, SUM(total_amount) as total")
+            ->groupByRaw($m)
             ->orderBy('month')
             ->pluck('total', 'month');
 
