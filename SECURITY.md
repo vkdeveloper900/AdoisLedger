@@ -11,7 +11,7 @@
 
 If you discover a security vulnerability in AdoisLedger, **please do not open a public GitHub issue.**
 
-Report it privately by emailing: **martech@adlertalent.com**
+Report it privately by emailing: **vkdeveloper900@gmail.com**
 
 Include the following in your report:
 - Description of the vulnerability
