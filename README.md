@@ -1,59 +1,260 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AdoisLedger
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A self-hosted, multi-tenant accounting and ledger management system tailored for Indian small businesses — dairy farms, general stores, and construction material suppliers.
 
-## About Laravel
+AdoisLedger tracks sales, purchases, vendor/customer payments, and maintains a full double-entry ledger per business. Multiple business profiles can be managed from a single installation, with session-scoped multi-tenancy, PDF bill generation, WhatsApp sharing, automated backups, and a clean Bootstrap 5 admin UI.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Laravel 13.8 (PHP 8.3+) |
+| **UI Theme** | Vuexy v10 — Bootstrap 5 Admin Template |
+| **Database** | MySQL 8+ (SQLite supported for local dev) |
+| **PDF Generation** | barryvdh/laravel-dompdf v3.1 |
+| **Session / Cache** | Database driver |
+| **Queue** | Database driver |
+| **Auth** | Laravel session-based auth (single user) |
+| **Frontend** | Bootstrap 5, Tabler Icons, Vite |
+| **Timezone** | Asia/Kolkata (IST) |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Features
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Multi-business support** — manage Dairy, General Store, and Construction businesses from one app
+- **Business-type-aware billing** — dairy fat% tracking, construction materials & units, general sale
+- **Double-entry ledger** — running balance per customer/vendor with full audit trail
+- **PDF bills** — clean printable invoices via dompdf
+- **WhatsApp sharing** — send bill summaries directly via WhatsApp
+- **Payments** — record customer receipts and vendor payments with ledger posting
+- **Reports** — balance sheet by business, per-customer ledger detail
+- **Database backup & restore** — pure PHP backup (no mysqldump required), works offline
+- **User management** — add/edit users with avatar upload
+- **Documentation module** — built-in usage guide for all modules
+- **Error pages** — Vuexy-themed 404, 401, 500, 503 pages
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Business Types
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+| ID | Type | Special Logic |
+|----|------|--------------|
+| 1 | General Store | Basic sale billing |
+| 2 | Dairy | Fat % per item, dairy sale + purchase |
+| 3 | Construction Materials | Materials & units management |
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────┐
+│               Browser / User                │
+└──────────────────────┬──────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────┐
+│         Laravel Route + Middleware           │
+│   ActiveBusinessProfile (session context)   │
+└──────────────────────┬──────────────────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+   Controllers     Actions        Services
+  (HTTP layer)  (PostBillAction)  (BackupService)
+        │              │
+        └──────────────▼
+              Eloquent Models
+     Transaction · LedgerEntry · Payment
+     Customer · BusinessProfile · Material
+        │
+        ▼
+   MySQL / SQLite Database
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Key Design Patterns
 
-## Contributing
+**Session Multi-tenancy** — `session('active_business_id')` scopes every query to the active `BusinessProfile`. The `ActiveBusinessProfile` middleware injects `$activeProfile` into all views.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**PostBillAction** — The single entry point for all ledger posting. Creates `LedgerEntry` records, calculates running balance, and marks transactions as `posted`. Never bypassed.
 
-## Code of Conduct
+**Double-Entry Ledger** — Every financial event (sale, purchase, payment) writes a `LedgerEntry` with `debit`, `credit`, and `running_balance` stored as integers (paise — no floats).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Database Schema
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+users                    → auth + profile (name, email, avatar, phone)
+business_profiles        → business name, type, bank details
+customers                → party (customer | vendor | both) per business
+transactions             → bills & purchases (type enum)
+transaction_items        → line items (qty, fat%, rate, amount)
+ledger_entries           → double-entry records (debit, credit, running_balance)
+payments                 → standalone payment records
+materials                → construction items per business
+units                    → measurement units per business
+```
+
+**Amount Storage:** All money columns (`total_amount`, `balance`, `debit`, `credit`, `running_balance`) are integers representing paise/cents. No float columns.
+
+---
+
+## Transaction Types (Enum)
+
+| Type | Description |
+|------|-------------|
+| `general_sale` | General store billing |
+| `dairy_sale` | Dairy customer billing (with fat%) |
+| `dairy_purchase` | Dairy vendor purchase |
+| `construction_sale` | Construction materials billing |
+
+---
+
+## Project Structure
+
+```
+app/
+  Actions/Billing/PostBillAction.php     # Core ledger-posting logic
+  Enums/TransactionType.php              # Transaction type enum
+  Http/
+    Controllers/
+      Auth/AuthController.php
+      Billing/BillController.php
+      Billing/PaymentController.php
+      Purchases/PurchaseController.php
+      Parties/CustomerController.php
+      Settings/BusinessProfileController.php
+      Settings/UserController.php
+      Settings/BackupController.php
+      DocumentationController.php
+      EnterShopController.php
+    Middleware/ActiveBusinessProfile.php
+  Models/
+    BusinessProfile · Customer · Transaction
+    TransactionItem · LedgerEntry · Payment
+    Material · Unit · User
+  Services/BackupService.php
+
+resources/views/
+  layouts/           # app.blade.php, auth.blade.php
+  dashboard/
+  billing/           # create-general, create-dairy, create-construction, show, ledger
+  purchases/
+  parties/customers/
+  reports/           # balance-sheet, per-customer
+  settings/          # business-profiles, users, backup
+  docs/              # 5-page built-in documentation
+  errors/            # 401, 404, 500, 503
+
+database/
+  migrations/
+  seeders/
+    DatabaseSeeder · BusinessProfileSeeder
+    CustomerSeeder · MaterialUnitSeeder
+```
+
+---
+
+## Getting Started
+
+### Requirements
+
+- PHP 8.3+
+- MySQL 8+ (or SQLite for local dev)
+- Composer
+- Node.js + NPM
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/vkdeveloper900/AdoisLedger.git
+cd AdoisLedger
+
+# Install dependencies and set up
+composer run setup
+# (runs: composer install, key:generate, migrate, npm install, npm run build)
+
+# Or manually:
+composer install
+cp .env.example .env
+php artisan key:generate
+# Edit .env — set DB_DATABASE, DB_USERNAME, DB_PASSWORD
+php artisan migrate
+php artisan db:seed
+npm install && npm run build
+```
+
+### Environment
+
+Key `.env` settings:
+
+```env
+APP_TIMEZONE=Asia/Kolkata
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=adois_ledger
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+```
+
+### Default Login (after seeding)
+
+| Field | Value |
+|-------|-------|
+| Email | `admin@gmail.com` |
+| Password | `Admin@123` |
+
+### Sample Businesses (seeded)
+
+| Business | Type |
+|----------|------|
+| Ranisa Dairy | Dairy |
+| Ranisa General Store | General |
+| Ranisa Construction Materials | Construction |
+
+---
+
+## Development
+
+```bash
+# Start dev server (server + queue + logs + vite)
+composer run dev
+
+# Run tests
+php artisan test
+
+# Format code
+./vendor/bin/pint
+
+# Re-seed database (truncates all tables)
+php artisan db:seed
+```
+
+---
+
+## Core Flow
+
+```
+Login → Select Business → Dashboard
+  ├── Billing → Create Bill → PostBillAction → LedgerEntry (receivable)
+  ├── Purchases → Create Purchase → PostBillAction → LedgerEntry (payable)
+  ├── Payments → Record Payment → LedgerEntry (payment_received / payment_made)
+  ├── Reports → Balance Sheet / Per-Customer Ledger
+  └── Settings → Business Profiles / Users / Backup & Restore
+```
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# AdoisLedger
+Private project. All rights reserved.
