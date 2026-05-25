@@ -17,6 +17,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'store']);
 });
 
+// Public invoice — no auth required
+Route::get('/invoice/{token}', [BillController::class, 'publicInvoice'])->name('bills.public');
+
 Route::post('/logout', [AuthController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');

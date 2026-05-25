@@ -23,20 +23,20 @@
 
         {{-- WhatsApp --}}
         @php
-            $pdfUrl  = route('bills.pdf', $bill);
-            $phone   = $bill->customer?->mobile ? preg_replace('/\D/', '', $bill->customer->mobile) : '';
-            $phone   = strlen($phone) === 10 ? '91'.$phone : $phone;
-            $msg     = "*{$bill->business->name}*\n"
-                     . "*Invoice: {$bill->bill_number}*\n"
-                     . "Date: {$bill->date->format('d M Y')}\n\n"
-                     . "*Customer:* {$bill->customer?->name}\n"
-                     . ($bill->customer?->mobile ? "Mobile: {$bill->customer->mobile}\n" : '')
-                     . "\n*Total:* Rs." . number_format($bill->total_amount) . "\n"
-                     . "*Received:* Rs." . number_format($bill->amount_received) . "\n"
-                     . ($bill->balance > 0 ? "*Balance Due:* Rs." . number_format($bill->balance) . "\n" : "*Fully Settled*\n")
-                     . "\n*View Invoice:* {$pdfUrl}\n\n"
-                     . ($bill->business->phone ? "_{$bill->business->name} · {$bill->business->phone}_" : "_{$bill->business->name}_");
-            $waUrl   = 'https://wa.me/' . ($phone ?: '') . '?text=' . rawurlencode($msg);
+            $publicUrl = route('bills.public', $bill->public_token);
+            $phone     = $bill->customer?->mobile ? preg_replace('/\D/', '', $bill->customer->mobile) : '';
+            $phone     = strlen($phone) === 10 ? '91'.$phone : $phone;
+            $msg       = "*{$bill->business->name}*\n"
+                       . "*Invoice: {$bill->bill_number}*\n"
+                       . "Date: {$bill->date->format('d M Y')}\n\n"
+                       . "*Customer:* {$bill->customer?->name}\n"
+                       . ($bill->customer?->mobile ? "Mobile: {$bill->customer->mobile}\n" : '')
+                       . "\n*Total:* Rs." . number_format($bill->total_amount) . "\n"
+                       . "*Received:* Rs." . number_format($bill->amount_received) . "\n"
+                       . ($bill->balance > 0 ? "*Balance Due:* Rs." . number_format($bill->balance) . "\n" : "*Fully Settled*\n")
+                       . "\n*View Invoice:* {$publicUrl}\n\n"
+                       . ($bill->business->phone ? "_{$bill->business->name} · {$bill->business->phone}_" : "_{$bill->business->name}_");
+            $waUrl     = 'https://wa.me/' . ($phone ?: '') . '?text=' . rawurlencode($msg);
         @endphp
         <a href="{{ $waUrl }}" target="_blank"
            class="btn btn-sm btn-success">
