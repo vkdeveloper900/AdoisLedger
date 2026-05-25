@@ -150,6 +150,15 @@ class BillController extends Controller
         return $pdf->stream($bill->bill_number . '.pdf');
     }
 
+    public function publicInvoice(string $token)
+    {
+        $bill = Transaction::where('public_token', $token)
+                    ->with('items', 'customer', 'business')
+                    ->firstOrFail();
+
+        return view('billing.public-invoice', compact('bill'));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function defaultType(int $businessTypeId): string
