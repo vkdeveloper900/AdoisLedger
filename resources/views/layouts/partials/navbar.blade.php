@@ -66,34 +66,40 @@
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="{{ asset('assets/img/avatars/1.png') }}" alt="User avatar" class="rounded-circle">
+                        <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="rounded-circle">
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item mt-0" href="{{ route('settings.users.show', auth()->user()) }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ asset('assets/img/avatars/1.png') }}" alt="User avatar" class="w-px-40 h-auto rounded-circle">
+                                        <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-px-40 h-auto rounded-circle">
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">{{ auth()->user()->name }}</h6>
-                                    <small class="text-body-secondary">Admin</small>
+                                    <small class="text-body-secondary">{{ auth()->user()->email }}</small>
                                 </div>
                             </div>
                         </a>
                     </li>
                     <li><div class="dropdown-divider my-1"></div></li>
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="{{ route('settings.users.show', auth()->user()) }}">
                             <i class="icon-base ti tabler-user me-3 icon-md"></i>
-                            <span>Profile</span>
+                            <span>My Profile</span>
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="{{ route('settings.users.edit', auth()->user()) }}">
+                            <i class="icon-base ti tabler-edit me-3 icon-md"></i>
+                            <span>Edit Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('settings.business-profiles.index') }}">
                             <i class="icon-base ti tabler-settings me-3 icon-md"></i>
                             <span>Settings</span>
                         </a>
@@ -102,7 +108,7 @@
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="dropdown-item">
+                            <button type="submit" class="dropdown-item text-danger">
                                 <i class="icon-base ti tabler-logout me-3 icon-md"></i>
                                 <span>Logout</span>
                             </button>
