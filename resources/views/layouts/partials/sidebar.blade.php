@@ -133,6 +133,11 @@
                 <div>Settings</div>
             </a>
             <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('settings.users.*') ? 'active' : '' }}">
+                    <a href="{{ route('settings.users.index') }}" class="menu-link">
+                        <div>Users</div>
+                    </a>
+                </li>
                 <li class="menu-item {{ request()->routeIs('settings.business-profiles.*') ? 'active' : '' }}">
                     <a href="{{ route('settings.business-profiles.index') }}" class="menu-link">
                         <div>Business Profiles</div>
@@ -145,6 +150,46 @@
                         </a>
                     </li>
                 @endif
+                <li class="menu-item {{ request()->routeIs('settings.backup.*') ? 'active' : '' }}">
+                    <a href="{{ route('settings.backup.index') }}" class="menu-link">
+                        <div>Backup & Restore</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Documentation -->
+        <li class="menu-item {{ request()->routeIs('docs.*') ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-book"></i>
+                <div>Documentation</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->routeIs('docs.index') ? 'active' : '' }}">
+                    <a href="{{ route('docs.index') }}" class="menu-link">
+                        <div>Overview</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('docs.getting-started') ? 'active' : '' }}">
+                    <a href="{{ route('docs.getting-started') }}" class="menu-link">
+                        <div>Getting Started</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('docs.project-flow') ? 'active' : '' }}">
+                    <a href="{{ route('docs.project-flow') }}" class="menu-link">
+                        <div>Project Flow</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('docs.business-guide') ? 'active' : '' }}">
+                    <a href="{{ route('docs.business-guide') }}" class="menu-link">
+                        <div>Business Guide</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('docs.modules') ? 'active' : '' }}">
+                    <a href="{{ route('docs.modules') }}" class="menu-link">
+                        <div>Module Reference</div>
+                    </a>
+                </li>
             </ul>
         </li>
 
